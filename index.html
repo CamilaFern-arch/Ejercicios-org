@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 
 const workoutData = {
   Lunes: {
@@ -79,6 +79,7 @@ export default function WorkoutApp() {
   const workout = workoutData[selectedDay];
 
   const toggleSet = (exIdx, setIdx) => {
+    // Corregido el uso de plantillas literales (backticks `` y no comillas simples '')
     const key = `${selectedDay}-${exIdx}`;
     const current = completedSets[key] || [];
     const newSets = current.includes(setIdx)
@@ -88,69 +89,87 @@ export default function WorkoutApp() {
   };
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      background: "#0a0a0f",
-      color: "#fff",
-      fontFamily: "sans-serif",
-      padding: "20px"
-    }}>
-      {/* Esto ayuda al navegador a poner el icono de pesas */}
-      <link rel="icon" href="https://fav.farm/🏋️" />
-      
-      <header style={{ textAlign: "center", marginBottom: "30px" }}>
-        <h1 style={{ color: workout.color, fontSize: "2.5rem" }}>EJERCICIOS 🏋️</h1>
-        <p style={{ opacity: 0.7 }}>{selectedDay} - {workout.title}</p>
-      </header>
+    <>
+      {/* Esta sección del head ayuda al navegador a poner el icono */}
+      <head>
+        <title>Mi Rutina</title>
+        <link rel="icon" href="https://fav.farm/🏋️" />
+        {/* Metadatos adicionales para iOS/Apple */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-title" content="Rutina" />
+        <link rel="apple-touch-icon" href="https://fav.farm/🏋️" />
+      </head>
 
-      <div style={{ display: "flex", gap: "10px", overflowX: "auto", marginBottom: "20px" }}>
-        {days.map(day => (
-          <button 
-            key={day}
-            onClick={() => setSelectedDay(day)}
-            style={{
-              padding: "10px",
-              borderRadius: "10px",
-              border: "none",
-              background: selectedDay === day ? workoutData[day].color : "#222",
-              color: "#fff",
-              fontWeight: "bold"
-            }}
-          >
-            {day.slice(0,3)}
-          </button>
-        ))}
-      </div>
+      <div style={{
+        minHeight: "100vh",
+        background: "#0a0a0f",
+        color: "#fff",
+        fontFamily: "sans-serif",
+        padding: "20px"
+      }}>
+        
+        <header style={{ textAlign: "center", marginBottom: "30px" }}>
+          {/* Fíjate que el icono del título es "🏋️" (pesas) */}
+          <h1 style={{ color: workout.color, fontSize: "2.5rem" }}>EJERCICIOS 🏋️</h1>
+          <p style={{ opacity: 0.7 }}>{selectedDay} - {workout.title}</p>
+        </header>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-        {workout.exercises.map((ex, exIdx) => (
-          <div key={exIdx} style={{ background: "#1a1a2e", padding: "15px", borderRadius: "15px", border: `1px solid ${workout.color}44` }}>
-            <div style={{ marginBottom: "10px" }}>
-              <strong>{ex.icon} {ex.name}</strong>
-              <div style={{ fontSize: "0.8rem", opacity: 0.6 }}>{ex.sets} series x {ex.reps}</div>
+        {/* Selector de días */}
+        <div style={{ display: "flex", gap: "10px", overflowX: "auto", marginBottom: "20px" }}>
+          {days.map(day => (
+            <button 
+              key={day}
+              onClick={() => setSelectedDay(day)}
+              style={{
+                padding: "10px",
+                borderRadius: "10px",
+                border: "none",
+                background: selectedDay === day ? workoutData[day].color : "#222",
+                color: "#fff",
+                fontWeight: "bold",
+                cursor: "pointer"
+              }}
+            >
+              {day.slice(0,3).toUpperCase()}
+            </button>
+          ))}
+        </div>
+
+        {/* Lista de ejercicios */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+          {workout.exercises.map((ex, exIdx) => (
+            <div key={exIdx} style={{ background: "#1a1a2e", padding: "15px", borderRadius: "15px", border: `1px solid ${workout.color}44` }}>
+              <div style={{ marginBottom: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div>
+                  <strong>{ex.icon} {ex.name}</strong>
+                  <div style={{ fontSize: "0.8rem", opacity: 0.6 }}>{ex.sets} series x {ex.reps}</div>
+                </div>
+              </div>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                {Array.from({ length: ex.sets }).map((_, sIdx) => {
+                  // Corregido el uso de plantillas literales (backticks `` y no comillas simples '')
+                  const isDone = (completedSets[`${selectedDay}-${exIdx}`] || []).includes(sIdx);
+                  return (
+                    <button
+                      key={sIdx}
+                      onClick={() => toggleSet(exIdx, sIdx)}
+                      style={{
+                        width: "40px", height: "40px", borderRadius: "8px",
+                        border: "none",
+                        background: isDone ? workout.color : "#333",
+                        color: "#fff",
+                        cursor: "pointer"
+                      }}
+                    >
+                      {isDone ? "✓" : sIdx + 1}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            <div style={{ display: "flex", gap: "8px" }}>
-              {Array.from({ length: ex.sets }).map((_, sIdx) => {
-                const isDone = (completedSets[`${selectedDay}-${exIdx}`] || []).includes(sIdx);
-                return (
-                  <button
-                    key={sIdx}
-                    onClick={() => toggleSet(exIdx, sIdx)}
-                    style={{
-                      width: "40px", height: "40px", borderRadius: "8px",
-                      border: "none",
-                      background: isDone ? workout.color : "#333",
-                      color: "#fff"
-                    }}
-                  >
-                    {isDone ? "✓" : sIdx + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
