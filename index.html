@@ -1,441 +1,414 @@
-import { useState, useEffect, useRef } from “react”;
+<!DOCTYPE html>
 
-const workoutData = {
-Lunes: {
-title: “PIERNAS”,
-emoji: “🦵”,
-color: “#FF6B6B”,
-glow: “rgba(255,107,107,0.4)”,
-exercises: [
-{ name: “Sentadilla Sumo”, sets: 4, reps: “15”, icon: “🏋️‍♀️” },
-{ name: “Peso Muerto”, sets: 4, reps: “12”, icon: “💪” },
-{ name: “Zancada Atrás”, sets: 4, reps: “12”, icon: “🚶‍♀️” },
-{ name: “Sentadilla Pulse”, sets: 3, reps: “20”, icon: “⚡” },
-{ name: “Pantorrillas”, sets: 4, reps: “20”, icon: “🦶” },
-],
-},
-Martes: {
-title: “ESPALDA + BRAZOS”,
-emoji: “💪”,
-color: “#A78BFA”,
-glow: “rgba(167,139,250,0.4)”,
-exercises: [
-{ name: “Remo Barra”, sets: 4, reps: “12”, icon: “🏋️” },
-{ name: “Remo Mancuerna”, sets: 3, reps: “12”, icon: “💪” },
-{ name: “Curl Bíceps”, sets: 3, reps: “15”, icon: “🤸” },
-{ name: “Tríceps”, sets: 3, reps: “15”, icon: “✊” },
-{ name: “Lateral Raises”, sets: 3, reps: “15”, icon: “🙌” },
-],
-},
-Miercoles: {
-title: “ABDOMEN + QUEMA”,
-emoji: “🔥”,
-color: “#F59E0B”,
-glow: “rgba(245,158,11,0.4)”,
-exercises: [
-{ name: “Crunch”, sets: 4, reps: “25”, icon: “🧘” },
-{ name: “Elevación Piernas”, sets: 3, reps: “20”, icon: “🦵” },
-{ name: “Plancha”, sets: 4, reps: “40seg”, icon: “⏱️” },
-{ name: “Russian Twist”, sets: 3, reps: “30”, icon: “🌀” },
-{ name: “Hipopresivos”, sets: 5, reps: “—”, icon: “🧘‍♀️” },
-],
-},
-Jueves: {
-title: “PECHO + HOMBRO”,
-emoji: “🏆”,
-color: “#34D399”,
-glow: “rgba(52,211,153,0.4)”,
-exercises: [
-{ name: “Press”, sets: 4, reps: “12”, icon: “🏋️” },
-{ name: “Aperturas”, sets: 3, reps: “15”, icon: “🦅” },
-{ name: “Elevaciones Laterales”, sets: 4, reps: “15”, icon: “⬆️” },
-{ name: “Press Cerrado”, sets: 3, reps: “15”, icon: “🤜” },
-{ name: “Patada Tríceps”, sets: 3, reps: “15”, icon: “🦵” },
-],
-},
-Viernes: {
-title: “PIERNAS + ABDOMEN”,
-emoji: “⚡”,
-color: “#F472B6”,
-glow: “rgba(244,114,182,0.4)”,
-exercises: [
-{ name: “Pantorrilla”, sets: 4, reps: “20”, icon: “🦶” },
-{ name: “Peso Muerto Rígido”, sets: 4, reps: “12”, icon: “💪” },
-{ name: “Sentadilla”, sets: 4, reps: “15”, icon: “🏋️‍♀️” },
-{ name: “Zancada Lateral”, sets: 3, reps: “12”, icon: “↔️” },
-{ name: “Plancha Lateral”, sets: 3, reps: “15”, icon: “⏱️” },
-],
-},
-};
-
-const days = [“Lunes”, “Martes”, “Miercoles”, “Jueves”, “Viernes”];
-
-const affirmations = [
-“¡La disciplina también es amor propio! 💖”,
-“Confío en el proceso que estoy construyendo 🌱”,
-“¡Yo puedo, yo siempre puedo! ⚡”,
-“Estoy construyendo el hábito de recordarme que SÍ PUEDO 💪”,
-“¡Cada rep te acerca más a tu mejor versión! 🏆”,
-“¡Hoy te superas a ti misma! 🔥”,
-];
-
-export default function WorkoutApp() {
-const today = new Date().toLocaleDateString(“es-ES”, { weekday: “long” });
-const todayCapitalized = today.charAt(0).toUpperCase() + today.slice(1);
-const defaultDay = days.find((d) =>
-todayCapitalized.startsWith(d.slice(0, 5))
-) || “Lunes”;
-
-const [selectedDay, setSelectedDay] = useState(defaultDay);
-const [completedSets, setCompletedSets] = useState({});
-const [affirmIdx, setAffirmIdx] = useState(0);
-const [celebrate, setCelebrate] = useState(false);
-const [particles, setParticles] = useState([]);
-const [completedDays, setCompletedDays] = useState(() => {
-try { return JSON.parse(localStorage.getItem(“completedDays”) || “{}”); } catch { return {}; }
-});
-
-const workout = workoutData[selectedDay];
-
-useEffect(() => {
-const interval = setInterval(() => {
-setAffirmIdx((i) => (i + 1) % affirmations.length);
-}, 4000);
-return () => clearInterval(interval);
-}, []);
-
-const totalSets = workout.exercises.reduce((a, e) => a + e.sets, 0);
-const doneSets = Object.values(completedSets).flat().length;
-const progress = Math.round((doneSets / totalSets) * 100);
-
-const isExerciseDone = (exIdx) => {
-const ex = workout.exercises[exIdx];
-return (completedSets[`${selectedDay}-${exIdx}`] || []).length >= ex.sets;
-};
-
-const toggleSet = (exIdx, setIdx) => {
-const key = `${selectedDay}-${exIdx}`;
-const current = completedSets[key] || [];
-const newSets = current.includes(setIdx)
-? current.filter((s) => s !== setIdx)
-: […current, setIdx];
-const updated = { …completedSets, [key]: newSets };
-setCompletedSets(updated);
-
-```
-// Check if all sets for this exercise done
-if (newSets.length === workout.exercises[exIdx].sets) {
-  spawnParticles();
-}
-
-// Check full day completion
-const allDone = workout.exercises.every((ex, i) => {
-  const k = `${selectedDay}-${i}`;
-  const s = i === exIdx ? newSets : (updated[k] || []);
-  return s.length >= ex.sets;
-});
-if (allDone) {
-  setCelebrate(true);
-  const days2 = { ...completedDays, [selectedDay]: true };
-  setCompletedDays(days2);
-  try { localStorage.setItem("completedDays", JSON.stringify(days2)); } catch {}
-  setTimeout(() => setCelebrate(false), 3000);
-}
-```
-
-};
-
-const spawnParticles = () => {
-const p = Array.from({ length: 12 }, (_, i) => ({
-id: Date.now() + i,
-x: Math.random() * 100,
-delay: Math.random() * 0.3,
-}));
-setParticles(p);
-setTimeout(() => setParticles([]), 1500);
-};
-
-const resetDay = () => {
-const newCompleted = { …completedSets };
-workout.exercises.forEach((_, i) => {
-delete newCompleted[`${selectedDay}-${i}`];
-});
-setCompletedSets(newCompleted);
-};
-
-return (
-<div style={{
-minHeight: “100vh”,
-background: “linear-gradient(135deg, #0a0a0f 0%, #12101a 50%, #0d0d15 100%)”,
-fontFamily: “‘Trebuchet MS’, sans-serif”,
-color: “#fff”,
-padding: “0”,
-position: “relative”,
-overflow: “hidden”,
-}}>
-{/* Background orbs */}
-<div style={{
-position: “fixed”, top: “-20%”, left: “-10%”,
-width: “500px”, height: “500px”, borderRadius: “50%”,
-background: `radial-gradient(circle, ${workout.glow} 0%, transparent 70%)`,
-filter: “blur(60px)”, transition: “background 0.5s”, pointerEvents: “none”, zIndex: 0,
-}} />
-<div style={{
-position: “fixed”, bottom: “-20%”, right: “-10%”,
-width: “400px”, height: “400px”, borderRadius: “50%”,
-background: `radial-gradient(circle, ${workout.glow} 0%, transparent 70%)`,
-filter: “blur(80px)”, transition: “background 0.5s”, pointerEvents: “none”, zIndex: 0,
-}} />
-
-```
-  {/* Celebration particles */}
-  {particles.map((p) => (
-    <div key={p.id} style={{
-      position: "fixed", left: `${p.x}%`, top: "50%", zIndex: 100,
-      fontSize: "24px", pointerEvents: "none",
-      animation: `flyUp 1.2s ease-out ${p.delay}s forwards`,
-    }}>⭐</div>
-  ))}
-
-  <div style={{ position: "relative", zIndex: 1, maxWidth: "480px", margin: "0 auto", padding: "24px 16px 80px" }}>
-
-    {/* Header */}
-    <div style={{ textAlign: "center", marginBottom: "28px" }}>
-      <div style={{
-        fontSize: "11px", letterSpacing: "4px", color: workout.color,
-        textTransform: "uppercase", marginBottom: "6px", fontWeight: 700,
-      }}>RUTINA DE</div>
-      <h1 style={{
-        fontSize: "42px", fontWeight: 900, margin: 0,
-        background: `linear-gradient(135deg, #fff 40%, ${workout.color})`,
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
-        letterSpacing: "-1px",
-      }}>EJERCICIOS</h1>
-
-      {/* Affirmation ticker */}
-      <div style={{
-        marginTop: "12px", padding: "10px 20px",
-        background: "rgba(255,255,255,0.05)", borderRadius: "100px",
-        border: `1px solid ${workout.color}33`,
-        fontSize: "12px", color: "rgba(255,255,255,0.8)",
-        transition: "all 0.5s", fontStyle: "italic",
-      }}>
-        {affirmations[affirmIdx]}
-      </div>
-    </div>
-
-    {/* Day selector */}
-    <div style={{
-      display: "flex", gap: "8px", marginBottom: "24px",
-      overflowX: "auto", paddingBottom: "4px",
-    }}>
-      {days.map((day) => {
-        const d = workoutData[day];
-        const isSelected = day === selectedDay;
-        const isDone = completedDays[day];
-        return (
-          <button key={day} onClick={() => setSelectedDay(day)} style={{
-            flexShrink: 0,
-            padding: "10px 16px",
-            borderRadius: "16px",
-            border: `1.5px solid ${isSelected ? d.color : "rgba(255,255,255,0.1)"}`,
-            background: isSelected ? `${d.color}20` : "rgba(255,255,255,0.04)",
-            color: isSelected ? d.color : "rgba(255,255,255,0.5)",
-            fontSize: "12px", fontWeight: 700,
-            cursor: "pointer", transition: "all 0.25s",
-            position: "relative",
-            boxShadow: isSelected ? `0 0 20px ${d.glow}` : "none",
-          }}>
-            {isDone && <span style={{ position: "absolute", top: "-5px", right: "-5px", fontSize: "12px" }}>✅</span>}
-            {day.slice(0, 3).toUpperCase()}
-          </button>
-        );
-      })}
-    </div>
-
-    {/* Day header */}
-    <div style={{
-      background: `linear-gradient(135deg, ${workout.color}25 0%, transparent 100%)`,
-      border: `1px solid ${workout.color}40`,
-      borderRadius: "24px", padding: "20px 24px", marginBottom: "20px",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      boxShadow: `0 8px 32px ${workout.glow}`,
-    }}>
-      <div>
-        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", letterSpacing: "3px", marginBottom: "4px" }}>
-          {selectedDay.toUpperCase()}
-        </div>
-        <div style={{ fontSize: "22px", fontWeight: 900, color: workout.color }}>
-          {workout.emoji} {workout.title}
-        </div>
-      </div>
-      <div style={{ textAlign: "right" }}>
-        <div style={{ fontSize: "36px", fontWeight: 900, color: workout.color, lineHeight: 1 }}>
-          {progress}%
-        </div>
-        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>{doneSets}/{totalSets} sets</div>
-      </div>
-    </div>
-
-    {/* Progress bar */}
-    <div style={{
-      height: "6px", background: "rgba(255,255,255,0.08)",
-      borderRadius: "100px", marginBottom: "24px", overflow: "hidden",
-    }}>
-      <div style={{
-        height: "100%", width: `${progress}%`,
-        background: `linear-gradient(90deg, ${workout.color}, #fff)`,
-        borderRadius: "100px", transition: "width 0.4s cubic-bezier(0.34,1.56,0.64,1)",
-        boxShadow: `0 0 12px ${workout.color}`,
-      }} />
-    </div>
-
-    {/* Exercises */}
-    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-      {workout.exercises.map((ex, exIdx) => {
-        const done = isExerciseDone(exIdx);
-        const doneSetsForEx = (completedSets[`${selectedDay}-${exIdx}`] || []);
-        return (
-          <div key={exIdx} style={{
-            background: done
-              ? `linear-gradient(135deg, ${workout.color}30, ${workout.color}10)`
-              : "rgba(255,255,255,0.04)",
-            border: `1.5px solid ${done ? workout.color : "rgba(255,255,255,0.08)"}`,
-            borderRadius: "20px", padding: "18px 20px",
-            transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
-            boxShadow: done ? `0 4px 24px ${workout.glow}` : "none",
-            transform: done ? "scale(1.01)" : "scale(1)",
-          }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <span style={{ fontSize: "22px" }}>{ex.icon}</span>
-                <div>
-                  <div style={{
-                    fontSize: "15px", fontWeight: 700,
-                    color: done ? workout.color : "#fff",
-                    transition: "color 0.3s",
-                  }}>{ex.name}</div>
-                  <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
-                    {ex.sets} series × {ex.reps} reps
-                  </div>
-                </div>
-              </div>
-              {done && <span style={{ fontSize: "22px", animation: "popIn 0.4s ease" }}>🔥</span>}
-            </div>
-
-            {/* Set dots */}
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-              {Array.from({ length: ex.sets }, (_, setIdx) => {
-                const isSetDone = doneSetsForEx.includes(setIdx);
-                return (
-                  <button key={setIdx} onClick={() => toggleSet(exIdx, setIdx)} style={{
-                    width: "52px", height: "52px",
-                    borderRadius: "14px",
-                    border: `2px solid ${isSetDone ? workout.color : "rgba(255,255,255,0.15)"}`,
-                    background: isSetDone
-                      ? `linear-gradient(135deg, ${workout.color}, ${workout.color}aa)`
-                      : "rgba(255,255,255,0.05)",
-                    color: isSetDone ? "#fff" : "rgba(255,255,255,0.3)",
-                    fontSize: isSetDone ? "20px" : "13px",
-                    fontWeight: 700, cursor: "pointer",
-                    transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
-                    transform: isSetDone ? "scale(1.05)" : "scale(1)",
-                    boxShadow: isSetDone ? `0 4px 16px ${workout.glow}` : "none",
-                  }}>
-                    {isSetDone ? "✓" : setIdx + 1}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-
-    {/* Celebrate banner */}
-    {celebrate && (
-      <div style={{
-        position: "fixed", top: "50%", left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: `linear-gradient(135deg, #0a0a0f, #1a1a2e)`,
-        border: `2px solid ${workout.color}`,
-        borderRadius: "28px", padding: "40px",
-        textAlign: "center", zIndex: 200,
-        boxShadow: `0 0 60px ${workout.glow}`,
-        animation: "popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)",
-      }}>
-        <div style={{ fontSize: "60px", marginBottom: "12px" }}>🏆</div>
-        <div style={{ fontSize: "24px", fontWeight: 900, color: workout.color, marginBottom: "8px" }}>
-          ¡DÍA COMPLETADO!
-        </div>
-        <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>
-          ¡Eres increíble! 💪
-        </div>
-      </div>
-    )}
-
-    {/* Reset button */}
-    <button onClick={resetDay} style={{
-      marginTop: "28px", width: "100%",
-      padding: "14px",
-      borderRadius: "16px",
-      border: "1px solid rgba(255,255,255,0.1)",
-      background: "rgba(255,255,255,0.04)",
-      color: "rgba(255,255,255,0.4)",
-      fontSize: "13px", cursor: "pointer",
-      transition: "all 0.2s",
-    }}>
-      🔄 Reiniciar día
-    </button>
-
-    {/* Weekly progress */}
-    <div style={{
-      marginTop: "28px",
-      background: "rgba(255,255,255,0.04)",
-      border: "1px solid rgba(255,255,255,0.08)",
-      borderRadius: "20px", padding: "20px",
-    }}>
-      <div style={{ fontSize: "11px", letterSpacing: "3px", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>
-        PROGRESO SEMANAL
-      </div>
-      <div style={{ display: "flex", justifyContent: "space-around" }}>
-        {days.map((d) => (
-          <div key={d} style={{ textAlign: "center" }}>
-            <div style={{
-              width: "36px", height: "36px", borderRadius: "12px",
-              background: completedDays[d]
-                ? `linear-gradient(135deg, ${workoutData[d].color}, ${workoutData[d].color}88)`
-                : d === selectedDay ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
-              border: `1.5px solid ${d === selectedDay ? workoutData[d].color : "rgba(255,255,255,0.08)"}`,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              fontSize: "14px", margin: "0 auto 6px",
-              boxShadow: completedDays[d] ? `0 0 16px ${workoutData[d].glow}` : "none",
-            }}>
-              {completedDays[d] ? "✓" : workoutData[d].emoji}
-            </div>
-            <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)", letterSpacing: "1px" }}>
-              {d.slice(0, 3).toUpperCase()}
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  </div>
-
-  <style>{`
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rutina de Ejercicios 💪</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0a0a0f; }
+    button:hover { filter: brightness(1.15); }
+    ::-webkit-scrollbar { display: none; }
     @keyframes flyUp {
       0% { transform: translateY(0) scale(1); opacity: 1; }
       100% { transform: translateY(-200px) scale(0.5); opacity: 0; }
     }
     @keyframes popIn {
-      0% { transform: scale(0.7) translate(-50%, -50%); opacity: 0; }
-      100% { transform: scale(1) translate(-50%, -50%); opacity: 1; }
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
     }
-    button:hover { filter: brightness(1.15); }
-    ::-webkit-scrollbar { display: none; }
-  `}</style>
-</div>
-```
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-);
-}
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const workoutData = {
+      Lunes: {
+        title: "PIERNAS",
+        emoji: "🦵",
+        color: "#FF6B6B",
+        glow: "rgba(255,107,107,0.4)",
+        exercises: [
+          { name: "Sentadilla Sumo", sets: 4, reps: "15", icon: "🏋️‍♀️" },
+          { name: "Peso Muerto", sets: 4, reps: "12", icon: "💪" },
+          { name: "Zancada Atrás", sets: 4, reps: "12", icon: "🚶‍♀️" },
+          { name: "Sentadilla Pulse", sets: 3, reps: "20", icon: "⚡" },
+          { name: "Pantorrillas", sets: 4, reps: "20", icon: "🦶" },
+        ],
+      },
+      Martes: {
+        title: "ESPALDA + BRAZOS",
+        emoji: "💪",
+        color: "#A78BFA",
+        glow: "rgba(167,139,250,0.4)",
+        exercises: [
+          { name: "Remo Barra", sets: 4, reps: "12", icon: "🏋️" },
+          { name: "Remo Mancuerna", sets: 3, reps: "12", icon: "💪" },
+          { name: "Curl Bíceps", sets: 3, reps: "15", icon: "🤸" },
+          { name: "Tríceps", sets: 3, reps: "15", icon: "✊" },
+          { name: "Lateral Raises", sets: 3, reps: "15", icon: "🙌" },
+        ],
+      },
+      Miercoles: {
+        title: "ABDOMEN + QUEMA",
+        emoji: "🔥",
+        color: "#F59E0B",
+        glow: "rgba(245,158,11,0.4)",
+        exercises: [
+          { name: "Crunch", sets: 4, reps: "25", icon: "🧘" },
+          { name: "Elevación Piernas", sets: 3, reps: "20", icon: "🦵" },
+          { name: "Plancha", sets: 4, reps: "40seg", icon: "⏱️" },
+          { name: "Russian Twist", sets: 3, reps: "30", icon: "🌀" },
+          { name: "Hipopresivos", sets: 5, reps: "—", icon: "🧘‍♀️" },
+        ],
+      },
+      Jueves: {
+        title: "PECHO + HOMBRO",
+        emoji: "🏆",
+        color: "#34D399",
+        glow: "rgba(52,211,153,0.4)",
+        exercises: [
+          { name: "Press", sets: 4, reps: "12", icon: "🏋️" },
+          { name: "Aperturas", sets: 3, reps: "15", icon: "🦅" },
+          { name: "Elevaciones Laterales", sets: 4, reps: "15", icon: "⬆️" },
+          { name: "Press Cerrado", sets: 3, reps: "15", icon: "🤜" },
+          { name: "Patada Tríceps", sets: 3, reps: "15", icon: "🦵" },
+        ],
+      },
+      Viernes: {
+        title: "PIERNAS + ABDOMEN",
+        emoji: "⚡",
+        color: "#F472B6",
+        glow: "rgba(244,114,182,0.4)",
+        exercises: [
+          { name: "Pantorrilla", sets: 4, reps: "20", icon: "🦶" },
+          { name: "Peso Muerto Rígido", sets: 4, reps: "12", icon: "💪" },
+          { name: "Sentadilla", sets: 4, reps: "15", icon: "🏋️‍♀️" },
+          { name: "Zancada Lateral", sets: 3, reps: "12", icon: "↔️" },
+          { name: "Plancha Lateral", sets: 3, reps: "15", icon: "⏱️" },
+        ],
+      },
+    };
+
+    const days = ["Lunes", "Martes", "Miercoles", "Jueves", "Viernes"];
+
+    const affirmations = [
+      "¡La disciplina también es amor propio! 💖",
+      "Confío en el proceso que estoy construyendo 🌱",
+      "¡Yo puedo, yo siempre puedo! ⚡",
+      "Estoy construyendo el hábito de recordarme que SÍ PUEDO 💪",
+      "¡Cada rep te acerca más a tu mejor versión! 🏆",
+      "¡Hoy te superas a ti misma! 🔥",
+    ];
+
+    function App() {
+      const today = new Date().toLocaleDateString("es-ES", { weekday: "long" });
+      const todayCap = today.charAt(0).toUpperCase() + today.slice(1);
+      const defaultDay = days.find(d => todayCap.startsWith(d.slice(0, 5))) || "Lunes";
+
+      const [selectedDay, setSelectedDay] = useState(defaultDay);
+      const [completedSets, setCompletedSets] = useState(() => {
+        try { return JSON.parse(localStorage.getItem("completedSets") || "{}"); } catch { return {}; }
+      });
+      const [completedDays, setCompletedDays] = useState(() => {
+        try { return JSON.parse(localStorage.getItem("completedDays") || "{}"); } catch { return {}; }
+      });
+      const [affirmIdx, setAffirmIdx] = useState(0);
+      const [celebrate, setCelebrate] = useState(false);
+      const [particles, setParticles] = useState([]);
+
+      const workout = workoutData[selectedDay];
+
+      useEffect(() => {
+        const interval = setInterval(() => setAffirmIdx(i => (i + 1) % affirmations.length), 4000);
+        return () => clearInterval(interval);
+      }, []);
+
+      const totalSets = workout.exercises.reduce((a, e) => a + e.sets, 0);
+      const doneSetsCount = workout.exercises.reduce((a, _, i) => {
+        return a + (completedSets[`${selectedDay}-${i}`] || []).length;
+      }, 0);
+      const progress = Math.round((doneSetsCount / totalSets) * 100);
+
+      const toggleSet = (exIdx, setIdx) => {
+        const key = `${selectedDay}-${exIdx}`;
+        const current = completedSets[key] || [];
+        const newSets = current.includes(setIdx)
+          ? current.filter(s => s !== setIdx)
+          : [...current, setIdx];
+        const updated = { ...completedSets, [key]: newSets };
+        setCompletedSets(updated);
+        try { localStorage.setItem("completedSets", JSON.stringify(updated)); } catch {}
+
+        if (newSets.length === workout.exercises[exIdx].sets) spawnParticles();
+
+        const allDone = workout.exercises.every((ex, i) => {
+          const k = `${selectedDay}-${i}`;
+          const s = i === exIdx ? newSets : (updated[k] || []);
+          return s.length >= ex.sets;
+        });
+        if (allDone) {
+          setCelebrate(true);
+          const d2 = { ...completedDays, [selectedDay]: true };
+          setCompletedDays(d2);
+          try { localStorage.setItem("completedDays", JSON.stringify(d2)); } catch {}
+          setTimeout(() => setCelebrate(false), 3000);
+        }
+      };
+
+      const spawnParticles = () => {
+        const p = Array.from({ length: 12 }, (_, i) => ({
+          id: Date.now() + i, x: Math.random() * 90 + 5, delay: Math.random() * 0.3,
+        }));
+        setParticles(p);
+        setTimeout(() => setParticles([]), 1500);
+      };
+
+      const resetDay = () => {
+        const newC = { ...completedSets };
+        workout.exercises.forEach((_, i) => delete newC[`${selectedDay}-${i}`]);
+        setCompletedSets(newC);
+        const d2 = { ...completedDays };
+        delete d2[selectedDay];
+        setCompletedDays(d2);
+        try {
+          localStorage.setItem("completedSets", JSON.stringify(newC));
+          localStorage.setItem("completedDays", JSON.stringify(d2));
+        } catch {}
+      };
+
+      return (
+        <div style={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #0a0a0f 0%, #12101a 50%, #0d0d15 100%)",
+          fontFamily: "'Trebuchet MS', sans-serif",
+          color: "#fff", position: "relative", overflow: "hidden",
+        }}>
+          {/* BG orbs */}
+          <div style={{
+            position: "fixed", top: "-20%", left: "-10%", width: "500px", height: "500px",
+            borderRadius: "50%", background: `radial-gradient(circle, ${workout.glow} 0%, transparent 70%)`,
+            filter: "blur(60px)", transition: "background 0.5s", pointerEvents: "none", zIndex: 0,
+          }} />
+          <div style={{
+            position: "fixed", bottom: "-20%", right: "-10%", width: "400px", height: "400px",
+            borderRadius: "50%", background: `radial-gradient(circle, ${workout.glow} 0%, transparent 70%)`,
+            filter: "blur(80px)", transition: "background 0.5s", pointerEvents: "none", zIndex: 0,
+          }} />
+
+          {/* Particles */}
+          {particles.map(p => (
+            <div key={p.id} style={{
+              position: "fixed", left: `${p.x}%`, top: "50%", zIndex: 100,
+              fontSize: "24px", pointerEvents: "none",
+              animation: `flyUp 1.2s ease-out ${p.delay}s forwards`,
+            }}>⭐</div>
+          ))}
+
+          <div style={{ position: "relative", zIndex: 1, maxWidth: "480px", margin: "0 auto", padding: "24px 16px 80px" }}>
+
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: "28px" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "4px", color: workout.color, textTransform: "uppercase", marginBottom: "6px", fontWeight: 700 }}>
+                RUTINA DE
+              </div>
+              <h1 style={{
+                fontSize: "42px", fontWeight: 900, margin: 0,
+                background: `linear-gradient(135deg, #fff 40%, ${workout.color})`,
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", letterSpacing: "-1px",
+              }}>EJERCICIOS</h1>
+              <div style={{
+                marginTop: "12px", padding: "10px 20px",
+                background: "rgba(255,255,255,0.05)", borderRadius: "100px",
+                border: `1px solid ${workout.color}33`,
+                fontSize: "12px", color: "rgba(255,255,255,0.8)",
+                fontStyle: "italic", animation: "fadeIn 0.5s ease",
+                key: affirmIdx,
+              }}>
+                {affirmations[affirmIdx]}
+              </div>
+            </div>
+
+            {/* Day tabs */}
+            <div style={{ display: "flex", gap: "8px", marginBottom: "24px", overflowX: "auto", paddingBottom: "4px" }}>
+              {days.map(day => {
+                const d = workoutData[day];
+                const isSel = day === selectedDay;
+                return (
+                  <button key={day} onClick={() => setSelectedDay(day)} style={{
+                    flexShrink: 0, padding: "10px 16px", borderRadius: "16px",
+                    border: `1.5px solid ${isSel ? d.color : "rgba(255,255,255,0.1)"}`,
+                    background: isSel ? `${d.color}20` : "rgba(255,255,255,0.04)",
+                    color: isSel ? d.color : "rgba(255,255,255,0.5)",
+                    fontSize: "12px", fontWeight: 700, cursor: "pointer", transition: "all 0.25s",
+                    position: "relative",
+                    boxShadow: isSel ? `0 0 20px ${d.glow}` : "none",
+                  }}>
+                    {completedDays[day] && <span style={{ position: "absolute", top: "-5px", right: "-5px", fontSize: "12px" }}>✅</span>}
+                    {day.slice(0, 3).toUpperCase()}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Day header */}
+            <div style={{
+              background: `linear-gradient(135deg, ${workout.color}25 0%, transparent 100%)`,
+              border: `1px solid ${workout.color}40`, borderRadius: "24px",
+              padding: "20px 24px", marginBottom: "20px",
+              display: "flex", alignItems: "center", justifyContent: "space-between",
+              boxShadow: `0 8px 32px ${workout.glow}`,
+            }}>
+              <div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", letterSpacing: "3px", marginBottom: "4px" }}>
+                  {selectedDay.toUpperCase()}
+                </div>
+                <div style={{ fontSize: "22px", fontWeight: 900, color: workout.color }}>
+                  {workout.emoji} {workout.title}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontSize: "36px", fontWeight: 900, color: workout.color, lineHeight: 1 }}>{progress}%</div>
+                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>{doneSetsCount}/{totalSets} sets</div>
+              </div>
+            </div>
+
+            {/* Progress bar */}
+            <div style={{ height: "6px", background: "rgba(255,255,255,0.08)", borderRadius: "100px", marginBottom: "24px", overflow: "hidden" }}>
+              <div style={{
+                height: "100%", width: `${progress}%`,
+                background: `linear-gradient(90deg, ${workout.color}, #fff)`,
+                borderRadius: "100px", transition: "width 0.4s cubic-bezier(0.34,1.56,0.64,1)",
+                boxShadow: `0 0 12px ${workout.color}`,
+              }} />
+            </div>
+
+            {/* Exercises */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              {workout.exercises.map((ex, exIdx) => {
+                const doneEx = (completedSets[`${selectedDay}-${exIdx}`] || []).length >= ex.sets;
+                const doneSetsForEx = completedSets[`${selectedDay}-${exIdx}`] || [];
+                return (
+                  <div key={exIdx} style={{
+                    background: doneEx ? `linear-gradient(135deg, ${workout.color}30, ${workout.color}10)` : "rgba(255,255,255,0.04)",
+                    border: `1.5px solid ${doneEx ? workout.color : "rgba(255,255,255,0.08)"}`,
+                    borderRadius: "20px", padding: "18px 20px",
+                    transition: "all 0.35s cubic-bezier(0.34,1.56,0.64,1)",
+                    boxShadow: doneEx ? `0 4px 24px ${workout.glow}` : "none",
+                    transform: doneEx ? "scale(1.01)" : "scale(1)",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <span style={{ fontSize: "22px" }}>{ex.icon}</span>
+                        <div>
+                          <div style={{ fontSize: "15px", fontWeight: 700, color: doneEx ? workout.color : "#fff", transition: "color 0.3s" }}>
+                            {ex.name}
+                          </div>
+                          <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>
+                            {ex.sets} series × {ex.reps} reps
+                          </div>
+                        </div>
+                      </div>
+                      {doneEx && <span style={{ fontSize: "22px" }}>🔥</span>}
+                    </div>
+                    <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                      {Array.from({ length: ex.sets }, (_, setIdx) => {
+                        const isSetDone = doneSetsForEx.includes(setIdx);
+                        return (
+                          <button key={setIdx} onClick={() => toggleSet(exIdx, setIdx)} style={{
+                            width: "52px", height: "52px", borderRadius: "14px",
+                            border: `2px solid ${isSetDone ? workout.color : "rgba(255,255,255,0.15)"}`,
+                            background: isSetDone ? `linear-gradient(135deg, ${workout.color}, ${workout.color}aa)` : "rgba(255,255,255,0.05)",
+                            color: isSetDone ? "#fff" : "rgba(255,255,255,0.3)",
+                            fontSize: isSetDone ? "20px" : "13px", fontWeight: 700, cursor: "pointer",
+                            transition: "all 0.25s cubic-bezier(0.34,1.56,0.64,1)",
+                            transform: isSetDone ? "scale(1.05)" : "scale(1)",
+                            boxShadow: isSetDone ? `0 4px 16px ${workout.glow}` : "none",
+                          }}>
+                            {isSetDone ? "✓" : setIdx + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Reset */}
+            <button onClick={resetDay} style={{
+              marginTop: "28px", width: "100%", padding: "14px",
+              borderRadius: "16px", border: "1px solid rgba(255,255,255,0.1)",
+              background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)",
+              fontSize: "13px", cursor: "pointer", transition: "all 0.2s",
+            }}>
+              🔄 Reiniciar día
+            </button>
+
+            {/* Weekly progress */}
+            <div style={{ marginTop: "28px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "20px", padding: "20px" }}>
+              <div style={{ fontSize: "11px", letterSpacing: "3px", color: "rgba(255,255,255,0.4)", marginBottom: "14px" }}>
+                PROGRESO SEMANAL
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-around" }}>
+                {days.map(d => (
+                  <div key={d} style={{ textAlign: "center" }}>
+                    <div style={{
+                      width: "36px", height: "36px", borderRadius: "12px",
+                      background: completedDays[d]
+                        ? `linear-gradient(135deg, ${workoutData[d].color}, ${workoutData[d].color}88)`
+                        : d === selectedDay ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.04)",
+                      border: `1.5px solid ${d === selectedDay ? workoutData[d].color : "rgba(255,255,255,0.08)"}`,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontSize: "14px", margin: "0 auto 6px",
+                      boxShadow: completedDays[d] ? `0 0 16px ${workoutData[d].glow}` : "none",
+                    }}>
+                      {completedDays[d] ? "✓" : workoutData[d].emoji}
+                    </div>
+                    <div style={{ fontSize: "9px", color: "rgba(255,255,255,0.3)", letterSpacing: "1px" }}>
+                      {d.slice(0, 3).toUpperCase()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Celebrate */}
+          {celebrate && (
+            <div style={{
+              position: "fixed", top: "50%", left: "50%",
+              transform: "translate(-50%, -50%)",
+              background: "linear-gradient(135deg, #0a0a0f, #1a1a2e)",
+              border: `2px solid ${workout.color}`, borderRadius: "28px",
+              padding: "40px", textAlign: "center", zIndex: 200,
+              boxShadow: `0 0 60px ${workout.glow}`,
+              animation: "popIn 0.5s cubic-bezier(0.34,1.56,0.64,1)",
+            }}>
+              <div style={{ fontSize: "60px", marginBottom: "12px" }}>🏆</div>
+              <div style={{ fontSize: "24px", fontWeight: 900, color: workout.color, marginBottom: "8px" }}>
+                ¡DÍA COMPLETADO!
+              </div>
+              <div style={{ fontSize: "14px", color: "rgba(255,255,255,0.7)" }}>¡Eres increíble! 💪</div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+
+</body>
+</html>
